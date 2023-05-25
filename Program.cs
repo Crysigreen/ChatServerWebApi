@@ -1,3 +1,4 @@
+using ChatServerWebApi.Hubs;
 using ChatServerWebApi.Models;
 using ChatServerWebApi.Services;
 using Microsoft.AspNetCore.Builder;
@@ -28,6 +29,7 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+builder.Services.AddSignalR();
 
 // Enable CORS
 app.UseCors(options =>
@@ -50,5 +52,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<ChatHub>("/chatHub");
 
 app.Run();
