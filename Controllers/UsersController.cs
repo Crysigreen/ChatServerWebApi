@@ -38,6 +38,26 @@ namespace ChatServerWebApi.Controllers
             return authenticatedUser;
         }
 
+        [HttpGet("getAllUsers")]
+        public ActionResult<IEnumerable<User>> GetAll()
+        {
+            var users = _userService.GetUsers();
+            var userDtos = users.Select(u => new UserDto { Id = u.Id, Username = u.Username });
+            return Ok(userDtos);
+        }
+
+        //[HttpGet("{userId}")]
+        //public ActionResult<User> GetUserById(string userId)
+        //{
+        //    var user = _userService.GetUserById(userId);
+        //    if (user == null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    var userDto = user.Select
+        //    return Ok(user.Username);
+        //}
+
         //[HttpPost("login")]
         //public ActionResult<User> Login(string Username, string Password)
         //{

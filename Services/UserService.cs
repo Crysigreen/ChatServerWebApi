@@ -25,5 +25,16 @@ namespace ChatServerWebApi.Services
             var user = _users.Find(u => u.Username == username && u.Password == password).FirstOrDefault();
             return user;
         }
+
+        public IEnumerable<User> GetUsers()
+        {
+            return _users.Find(user => true).ToList();
+        }
+
+        //public User GetUserById(string userId)
+        //{
+        //    var partner = _users.Find(u => u.Id == userId).FirstOrDefault();
+        //    return partner;
+        //}
     }
 }

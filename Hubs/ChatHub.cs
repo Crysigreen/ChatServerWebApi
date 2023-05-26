@@ -1,13 +1,30 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using System.Threading.Tasks;
+﻿using ChatServerWebApi.Models;
+using Microsoft.AspNetCore.SignalR;
+using MongoDB.Driver;
 
-namespace ChatServerWebApi.Hubs
+public class ChatHub : Hub
 {
-    public class ChatHub : Hub
+    private readonly IMongoCollection<ChatMessage> _chatMessageCollection;
+
+    public ChatHub(IMongoDatabase database)
     {
-        public async Task SendMessage(string user, string message)
+        _chatMessageCollection = database.GetCollection<ChatMessage>("ChatMessages");
+    }
+
+    public async Task SendMessage(string senderId, string receiverId, string content)
+    {
+        var message = new ChatMessage
         {
-            await Clients.All.SendAsync("ReceiveMessage", user, message);
-        }
+            SenderId = senderId,
+            ReceiverId = receiverId,
+            Content = content,
+            Timestamp = DateTime.UtcNow
+        };
+
+        // Сохраните сообщение в базе данных
+        await _chatMessageCollection.InsertOneAsync(message);
+
+        // Отправьте сообщение всем подключенным клиентам
+        await Clients.All.SendAsync("ReceiveMessage", message);
     }
 }

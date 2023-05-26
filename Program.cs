@@ -7,11 +7,15 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MongoDB.Driver;
+using Microsoft.AspNetCore.SignalR;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddJsonFile("appsettings.json");
 // Add services to the container.
+
+builder.Services.AddSignalR();
 
 builder.Services.AddControllers();
 
@@ -28,8 +32,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-
-builder.Services.AddSignalR();
 
 // Enable CORS
 app.UseCors(options =>
