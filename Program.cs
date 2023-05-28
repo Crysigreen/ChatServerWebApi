@@ -1,4 +1,3 @@
-using ChatServerWebApi.Hubs;
 using ChatServerWebApi.Models;
 using ChatServerWebApi.Services;
 using Microsoft.AspNetCore.Builder;
@@ -16,6 +15,16 @@ builder.Configuration.AddJsonFile("appsettings.json");
 // Add services to the container.
 
 builder.Services.AddSignalR();
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+    {
+        builder.WithOrigins("http://localhost:4200")
+            .AllowCredentials()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 
 builder.Services.AddControllers();
 
@@ -34,12 +43,7 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 // Enable CORS
-app.UseCors(options =>
-{
-    options.AllowAnyOrigin();
-    options.AllowAnyMethod();
-    options.AllowAnyHeader();
-});
+app.UseCors();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -55,6 +59,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapHub<ChatHub>("/chatHub");
+app.MapHub<ChatHub>("chatHub");
 
 app.Run();
