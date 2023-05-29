@@ -6,20 +6,20 @@ using System.Collections.Concurrent;
 
 public class ChatHub : Hub
 {
-    private readonly IMongoCollection<Message> _messages;
+    private readonly IMongoCollection<ChatMessage> _messages;
 
     private static ConcurrentDictionary<string, string> clients = new ConcurrentDictionary<string, string>();
 
     public ChatHub(IMongoDatabase database)
     {
-        _messages = database.GetCollection<Message>("ChatMessages");
+        _messages = database.GetCollection<ChatMessage>("ChatMessages");
     }
 
     public override async Task OnConnectedAsync()
     {
         // Когда клиент подключается, получаем его имя пользователя из строки запроса и сохраняем его в отображении.
-        var httpContext = Context.GetHttpContext();
-        var username = httpContext.Request.Query["username"].ToString();
+        //var httpContext = Context.GetHttpContext();
+        var username = Context.GetHttpContext().Request.Query["username"].ToString();
         clients.TryAdd(Context.ConnectionId, username);
         await base.OnConnectedAsync();
     }
@@ -41,13 +41,21 @@ public class ChatHub : Hub
         // Получение ConnectionId получателя по его имени пользователя.
         var receiverConnectionId = clients.FirstOrDefault(x => x.Value == receiverUsername).Key;
 
+        var chatMessage = new ChatMessage
+        {
+            From = senderUsername,
+            To = receiverUsername,
+            Content = message,
+            Timestamp = DateTime.UtcNow
+        };
+
         if (!string.IsNullOrEmpty(receiverConnectionId))
         {
             // Отправка сообщения получателю.
-            await Clients.Client(receiverConnectionId).SendAsync("ReceiveMessage", senderUsername, message);
+            await Clients.Client(receiverConnectionId).SendAsync("ReceiveMessage", chatMessage);
 
             // Создание объекта сообщения и сохранение его в MongoDB.
-            var chatMessage = new Message { Sender = senderUsername, Receiver = receiverUsername, Content = message, Timestamp = DateTime.UtcNow };
+            
             await _messages.InsertOneAsync(chatMessage);
         }
 
@@ -67,20 +75,20 @@ public class ChatHub : Hub
     }
 }
 
-public class Message
-{
-    // Идентификатор сообщения в MongoDB.
-    public ObjectId Id { get; set; }
+//public class Message
+//{
+//    // Идентификатор сообщения в MongoDB.
+//    public ObjectId Id { get; set; }
 
-    // Имя пользователя-отправителя.
-    public string Sender { get; set; }
+//    // Имя пользователя-отправителя.
+//    public string Sender { get; set; }
 
-    // Имя пользователя-получателя.
-    public string Receiver { get; set; }
+//    // Имя пользователя-получателя.
+//    public string Receiver { get; set; }
 
-    // Текст сообщения.
-    public string Content { get; set; }
+//    // Текст сообщения.
+//    public string Content { get; set; }
 
-    // Время отправки сообщения.
-    public DateTime Timestamp { get; set; }
-}
+//    // Время отправки сообщения.
+//    public DateTime Timestamp { get; set; }
+//}
