@@ -12,10 +12,12 @@ namespace ChatServerWebApi.Controllers
     public class UsersController : ControllerBase
     {
         private readonly UserService _userService;
+        private readonly AuthService _authService;
 
-        public UsersController(UserService userService)
+        public UsersController(UserService userService, AuthService authService)
         {
             _userService = userService;
+            _authService = authService;
         }
 
         [HttpPost("register")]
@@ -28,14 +30,27 @@ namespace ChatServerWebApi.Controllers
             return registeredUser;
         }
 
-        [HttpPost("login")]
-        public ActionResult<User> Login(User loginRequest)
-        {
-            // Проверка имени пользователя и пароля
+        //[HttpPost("login")]
+        //public ActionResult<User> Login(User loginRequest)
+        //{
+        //    // Проверка имени пользователя и пароля
 
-            // Аутентификация пользователя
-            var authenticatedUser = _userService.Login(loginRequest.Username, loginRequest.Password);
-            return authenticatedUser;
+        //    // Аутентификация пользователя
+        //    var authenticatedUser = _userService.Login(loginRequest.Username, loginRequest.Password);
+        //    return authenticatedUser;
+        //}
+
+        [HttpPost("login")]
+        public IActionResult Login(string username, string password)
+        {
+            var token = _authService.Authenticate(username, password);
+
+            if (token == null)
+            {
+                return Unauthorized();
+            }
+
+            return Ok(new { token });
         }
 
         [HttpGet("getAllUsers")]

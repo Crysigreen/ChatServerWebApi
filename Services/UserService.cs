@@ -26,6 +26,14 @@ namespace ChatServerWebApi.Services
             return user;
         }
 
+        public User LoginJWT(string username)
+        {
+            // Поиск пользователя по имени пользователя и паролю
+            var user = _users.Find(u => u.Username == username).FirstOrDefault();
+            return user;
+        }
+
+
         public IEnumerable<User> GetUsers()
         {
             return _users.Find(user => true).ToList();
