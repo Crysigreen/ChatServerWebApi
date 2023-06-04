@@ -26,19 +26,19 @@ public class ChatHub : Hub
 
     public override async Task OnDisconnectedAsync(Exception exception)
     {
-        // Когда клиент отключается, удаляем его из отображения.
+        // When the client is disconnected, remove it from display.
         clients.TryRemove(Context.ConnectionId, out _);
         await base.OnDisconnectedAsync(exception);
     }
 
-    public async Task SendMessage(/*string senderId, string receiverId, string content,*/string receiverUsername, string message)
+    public async Task SendMessage(string receiverUsername, string message)
     {
 
-        // Получение имени отправителя по его ConnectionId.
+        // Get the sender's name by its ConnectionId.
         var senderConnectionId = Context.ConnectionId;
         var senderUsername = clients[senderConnectionId];
 
-        // Получение ConnectionId получателя по его имени пользователя.
+        // Get the receiver ConnectionId from his user name.
         var receiverConnectionId = clients.FirstOrDefault(x => x.Value == receiverUsername).Key;
 
         var chatMessage = new ChatMessage
@@ -51,44 +51,12 @@ public class ChatHub : Hub
 
         if (!string.IsNullOrEmpty(receiverConnectionId))
         {
-            // Отправка сообщения получателю.
+            // Sending a message to the receiver.
             await Clients.Client(receiverConnectionId).SendAsync("ReceiveMessage", chatMessage);
 
             // Создание объекта сообщения и сохранение его в MongoDB.
-            
             await _messages.InsertOneAsync(chatMessage);
         }
 
-        //var message = new ChatMessage
-        //{
-        //    SenderId = senderId,
-        //    ReceiverId = receiverId,
-        //    Content = content,
-        //    Timestamp = DateTime.UtcNow
-        //};
-
-        //// Сохраните сообщение в базе данных
-        //await _chatMessageCollection.InsertOneAsync(message);
-
-        //// Отправьте сообщение всем подключенным клиентам
-        //await Clients.All.SendAsync("ReceiveMessage", message);
     }
 }
-
-//public class Message
-//{
-//    // Идентификатор сообщения в MongoDB.
-//    public ObjectId Id { get; set; }
-
-//    // Имя пользователя-отправителя.
-//    public string Sender { get; set; }
-
-//    // Имя пользователя-получателя.
-//    public string Receiver { get; set; }
-
-//    // Текст сообщения.
-//    public string Content { get; set; }
-
-//    // Время отправки сообщения.
-//    public DateTime Timestamp { get; set; }
-//}

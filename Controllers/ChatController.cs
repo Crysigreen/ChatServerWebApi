@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ChatServerWebApi.Services;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using System.Threading.Tasks;
 
@@ -9,10 +10,12 @@ namespace ChatServerWebApi.Controllers
     public class ChatController : ControllerBase
     {
         private readonly IHubContext<ChatHub> _hubContext;
+        private readonly UserService _userService;
 
-        public ChatController(IHubContext<ChatHub> hubContext)
+        public ChatController(IHubContext<ChatHub> hubContext, UserService userService)
         {
             _hubContext = hubContext;
+            _userService = userService;
         }
 
         [HttpPost("SendMessage")]
@@ -23,6 +26,15 @@ namespace ChatServerWebApi.Controllers
 
             return Ok();
         }
+
+        [HttpGet("GetChatHistory")]
+        public async Task<IActionResult> GetChatHistory(string senderUsername,string friendUsername, int pageIndex, int pageSize)
+        {
+            /*var username = User.Identity.Name;*/  // Получаем имя текущего пользователя
+            var messages = await _userService.GetChatHistory(senderUsername, friendUsername, pageIndex, pageSize);
+            return Ok(messages);
+        }
+
     }
 
     public class MessageDto

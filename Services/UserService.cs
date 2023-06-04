@@ -6,10 +6,12 @@ namespace ChatServerWebApi.Services
     public class UserService
     {
         private readonly IMongoCollection<User> _users;
+        private readonly IMongoCollection<ChatMessage> _messagesCollection;
 
         public UserService(IMongoDatabase database)
         {
             _users = database.GetCollection<User>("Users");
+            _messagesCollection = database.GetCollection<ChatMessage>("ChatMessages");
         }
 
         public User Register(User user)
@@ -39,10 +41,19 @@ namespace ChatServerWebApi.Services
             return _users.Find(user => true).ToList();
         }
 
-        //public User GetUserById(string userId)
-        //{
-        //    var partner = _users.Find(u => u.Id == userId).FirstOrDefault();
-        //    return partner;
-        //}
+        public async Task<List<ChatMessage>> GetChatHistory(string userUsername, string friendUsername, int pageIndex, int pageSize)
+        {
+            var filter = Builders<ChatMessage>.Filter.Where(m =>
+                (m.From == userUsername && m.To == friendUsername) ||
+                (m.From == friendUsername && m.To == userUsername));
+
+            var messages = await _messagesCollection.Find(filter)
+                .Skip(pageSize * pageIndex)
+                .Limit(pageSize)
+                .SortByDescending(m => m.Timestamp)
+                .ToListAsync();
+
+            return messages;
+        }
     }
 }
