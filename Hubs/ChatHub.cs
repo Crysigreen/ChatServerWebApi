@@ -49,13 +49,15 @@ public class ChatHub : Hub
             Timestamp = DateTime.UtcNow
         };
 
+        await _messages.InsertOneAsync(chatMessage);
+
         if (!string.IsNullOrEmpty(receiverConnectionId))
         {
             // Sending a message to the receiver.
             await Clients.Client(receiverConnectionId).SendAsync("ReceiveMessage", chatMessage);
 
             // Создание объекта сообщения и сохранение его в MongoDB.
-            await _messages.InsertOneAsync(chatMessage);
+            //await _messages.InsertOneAsync(chatMessage);
         }
 
     }
