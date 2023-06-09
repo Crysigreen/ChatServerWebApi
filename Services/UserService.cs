@@ -30,7 +30,7 @@ namespace ChatServerWebApi.Services
 
         public User LoginJWT(string username)
         {
-            // Поиск пользователя по имени пользователя и паролю
+            // Поиск пользователя по имени пользователя
             var user = _users.Find(u => u.Username == username).FirstOrDefault();
             return user;
         }

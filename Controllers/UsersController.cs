@@ -43,14 +43,14 @@ namespace ChatServerWebApi.Controllers
         [HttpPost("login")]
         public IActionResult Login(string username, string password)
         {
-            var token = _authService.Authenticate(username, password);
+            var authenticationResult = _authService.Authenticate(username, password);
 
-            if (token == null)
+            if (authenticationResult == null)
             {
                 return Unauthorized();
             }
 
-            return Ok(new { token });
+            return Ok(new { token = authenticationResult.Token, userId = authenticationResult.UserId });
         }
 
         [HttpGet("getAllUsers")]

@@ -5,6 +5,12 @@ using System.Text;
 
 namespace ChatServerWebApi.Services
 {
+    public class AuthenticationResult
+    {
+        public string Token { get; set; }
+        public string UserId { get; set; }
+    }
+
     public class AuthService
     {
         private readonly UserService _userService;
@@ -16,7 +22,7 @@ namespace ChatServerWebApi.Services
             _jwtKey = config.GetSection("JwtKey").Value;
         }
 
-        public string Authenticate(string username, string password)
+        public AuthenticationResult Authenticate(string username, string password)
         {
             var user = _userService.LoginJWT(username);
 
@@ -35,7 +41,13 @@ namespace ChatServerWebApi.Services
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
 
-            return tokenHandler.WriteToken(token);
+            var authenticationResult = new AuthenticationResult
+            {
+                Token = tokenHandler.WriteToken(token),
+                UserId = user.Id
+            };
+
+            return authenticationResult;
         }
     }
 }
